@@ -36,6 +36,16 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "API_BASE_URL": "http://192.168.226.195:3000",
+      "FRONTED_BASE_URL": "http://192.168.226.195:8081",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "1afac247-11bd-4b24-9f7b-32e2108dc6f6"
+      }
     }
   }
 }
