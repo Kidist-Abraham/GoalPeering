@@ -17,6 +17,8 @@ export default ({ config }) => ({
       supportsTablet: true,
     },
     android: {
+      package: "goal-peering",
+      versionCode: 1,
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff",
