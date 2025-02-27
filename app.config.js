@@ -17,12 +17,15 @@ export default ({ config }) => ({
       supportsTablet: true,
     },
     android: {
-      package: "goal-peering",
+      package: "com.kid.goalpeering",
       versionCode: 1,
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff",
       },
+    },
+    ios: {
+      bundleIdentifier: "com.kid.goalpeering"
     },
     web: {
       bundler: "metro",
