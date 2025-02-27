@@ -4,23 +4,21 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   FlatList,
   ActivityIndicator,
   StyleSheet,
   Modal,
-  TouchableOpacity
+  TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { fetchGoals, Goals, CreateGoals } from "./api/goalsApi";
-import { GoalItem } from "./components/GoalItem"; 
+import { GoalItem } from "./components/GoalItem";
 import { useAuth } from "./contexts/AuthContext";
 
 export default function SearchGoalsScreen() {
   const router = useRouter();
-  console.log("Rendering SearchGoalsScreen");
-
   const { token } = useAuth();
+
   const [goals, setGoals] = useState<Goals[]>([]);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -30,18 +28,20 @@ export default function SearchGoalsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [newGoalName, setNewGoalName] = useState('');
-  const [newGoalDescription, setNewGoalDescription] = useState('');
+  const [newGoalName, setNewGoalName] = useState("");
+  const [newGoalDescription, setNewGoalDescription] = useState("");
 
   const totalPages = Math.ceil(total / limit);
 
-  const loadGoals = async (pageNumber: number, newQuery: string, replace = false) => {
-    console.log("loadGoals called with:", { pageNumber, newQuery, replace, token });
+  // Fetch paginated goals
+  const loadGoals = async (
+    pageNumber: number,
+    newQuery: string,
+    replace = false
+  ) => {
     setLoading(true);
     try {
       const data = await fetchGoals(pageNumber, limit, newQuery, token);
-      console.log("fetchGoals returned:", data);
-
       if (replace || pageNumber === 1) {
         setGoals(data.goals);
       } else {
@@ -57,75 +57,125 @@ export default function SearchGoalsScreen() {
     }
   };
 
+  // Reload the screen
   const reload = () => {
-    router.push("/search")
-  }
+    router.push("/search");
+  };
+
+  // On mount, load the first page of goals
   useEffect(() => {
-    console.log("useEffect => calling loadGoals(1, '', true)");
     loadGoals(1, "", true);
   }, []);
 
+  // Searching with user-entered query
   const handleSearch = () => {
-    console.log("handleSearch => resetting to page 1 with query:", query);
     setPage(1);
     loadGoals(1, query, true);
   };
 
+  // Creating a new goal
   const handleCreate = async () => {
     if (!token) return;
     try {
       await CreateGoals(newGoalName, newGoalDescription, token);
-      Alert.alert("Success", "You created the goal. It will now be on pending untill it gets 2 votes.");
-      reload()
+      Alert.alert(
+        "Success",
+        "You created the goal. It will remain pending until it gets 2 votes."
+      );
+      // Close the modal and refresh
+      setModalVisible(false);
+      reload();
     } catch (error) {
       console.error("Create goal error:", error);
       Alert.alert("Error", "Failed to create a goal.");
     }
   };
 
+  // Load more (pagination)
   const handleLoadMore = () => {
     if (!loading && page < totalPages) {
-      console.log("handleLoadMore => next page:", page + 1);
       loadGoals(page + 1, query, false);
     }
   };
 
+  // Pull-to-refresh
   const onRefresh = async () => {
-    console.log("Pull to refresh => reset page to 1");
     setRefreshing(true);
     setPage(1);
     await loadGoals(1, query, true);
   };
 
+  // Open modal to create a goal
   const handleOpenForm = () => {
-    setNewGoalName('');
-    setNewGoalDescription('');
+    setNewGoalName("");
+    setNewGoalDescription("");
     setModalVisible(true);
   };
 
-  // Closes the modal
+  // Close modal
   const handleCloseForm = () => {
     setModalVisible(false);
   };
 
-  const renderGoal = ({ item }: { item: Goals }) => <GoalItem item={item} token ={token} reload = {reload} />;
+  // FlatList item renderer
+  const renderGoal = ({ item }: { item: Goals }) => (
+    <GoalItem item={item} token={token} reload={reload} />
+  );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search goals..."
-          value={query}
-          onChangeText={setQuery}
+    <View style={styles.screen}>
+      {/* Header */}
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Search Goals</Text>
+
+        <View style={styles.searchRow}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search goals..."
+            placeholderTextColor="#888"
+            value={query}
+            onChangeText={setQuery}
+          />
+          <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+            <Text style={styles.searchButtonText}>Search</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={styles.createButton} onPress={handleOpenForm}>
+          <Text style={styles.createButtonText}>+ Create Your Own</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Main Content (Goals List) */}
+      <View style={styles.contentContainer}>
+        <FlatList
+          data={goals}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderGoal}
+          onEndReachedThreshold={0.5}
+          onEndReached={handleLoadMore}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          ListFooterComponent={
+            loading && page < totalPages ? (
+              <ActivityIndicator
+                size="large"
+                color="#95c427"
+                style={{ margin: 16 }}
+              />
+            ) : null
+          }
         />
-        <Button title="Search" onPress={handleSearch} />
+
+        {/* Show spinner if loading the very first page */}
+        {loading && page === 1 && (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color="#95c427" />
+          </View>
+        )}
       </View>
 
-      <View style={styles.searchContainer}>
-        <Button title="Create Your own" onPress={handleOpenForm} />
-      </View>
-
+      {/* Modal for Creating a Goal */}
       <Modal
         visible={modalVisible}
         transparent={true}
@@ -133,145 +183,176 @@ export default function SearchGoalsScreen() {
         onRequestClose={handleCloseForm}
       >
         <View style={styles.modalOverlay}>
+          {/* White Card for the Form */}
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>
-              Create Group
-            </Text>
+            <Text style={styles.modalTitle}>Create Goal</Text>
 
             <TextInput
-              style={[styles.input, { height: 80 }]}
-              multiline
+              style={[styles.modalInput, { height: 50 }]}
               placeholder="Enter Title"
+              placeholderTextColor="#888"
+              multiline
               value={newGoalName}
               onChangeText={setNewGoalName}
             />
 
             <TextInput
-              style={styles.input}
-              placeholder="Enter Content/Description"
+              style={[styles.modalInput, { height: 80 }]}
+              placeholder="Enter Description"
+              placeholderTextColor="#888"
+              multiline
               value={newGoalDescription}
               onChangeText={setNewGoalDescription}
             />
 
-            <View style={styles.buttonRow}>
+            <View style={styles.modalButtonRow}>
               <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
+                style={[styles.modalButton, { backgroundColor: "#888" }]}
                 onPress={handleCloseForm}
               >
-                <Text style={styles.buttonText}>Cancel</Text>
+                <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.button, styles.addButton]}
+                style={[styles.modalButton, { backgroundColor: "#95c427" }]}
                 onPress={handleCreate}
               >
-                <Text style={styles.buttonText}>Add</Text>
+                <Text style={styles.modalButtonText}>Add</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-
-      <FlatList
-        data={goals}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderGoal}
-        onEndReachedThreshold={0.5}
-        onEndReached={handleLoadMore}
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        ListFooterComponent={
-          loading && page < totalPages ? (
-            <ActivityIndicator size="large" color="#0000ff" style={{ margin: 16 }} />
-          ) : null
-        }
-      />
-
-      {loading && page === 1 && (
-        <ActivityIndicator size="large" color="blue" style={styles.spinnerOverlay} />
-      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 16 },
-    searchContainer: {
-      marginTop: 50,
-      flexDirection: "row",
-      marginBottom: 16,
-    },
-    searchInput: {
-      flex: 1,
-      borderWidth: 1,
-      borderColor: "#ccc",
-      marginRight: 8,
-      paddingHorizontal: 8,
-      borderRadius: 4,
-    },
-    goalItem: {
-      padding: 8,
-      borderBottomWidth: 1,
-      borderBottomColor: "#eee",
-    },
-    goalnName: {
-      fontSize: 16,
-      fontWeight: "bold",
-    },
-    goalDescription: {
-      fontSize: 14,
-      color: "#666",
-    },
-    spinnerOverlay: {
-      position: "absolute",
-      top: "50%",
-      left: "45%",
-    },
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.4)',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    modalContainer: {
-      width: '85%',
-      backgroundColor: '#fff',
-      borderRadius: 10,
-      padding: 16,
-    },
-    modalTitle: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 12,
-      textAlign: 'center',
-    },
-    input: {
-      borderWidth: 1,
-      borderColor: '#ccc',
-      borderRadius: 5,
-      padding: 8,
-      marginBottom: 10,
-      fontSize: 16,
-    },
-    button: {
-      paddingVertical: 10,
-      paddingHorizontal: 15,
-      borderRadius: 5,
-      marginLeft: 10,
-    },
-    cancelButton: {
-      backgroundColor: '#888',
-    },
-    addButton: {
-      backgroundColor: '#28a745',
-    },
-    buttonText: {
-      color: '#fff',
-      fontSize: 16,
-    },
-    buttonRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      gap: 10,
-    },
-  });
+  /***************************************
+   * Screen & General Layout
+   ***************************************/
+  screen: {
+    flex: 1,
+    backgroundColor: "#edf5f0",
+  },
+  contentContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+  },
+  loadingOverlay: {
+    position: "absolute",
+    alignSelf: "center",
+    top: "50%",
+  },
+
+  /***************************************
+   * Header Section
+   ***************************************/
+  headerContainer: {
+    backgroundColor: "#95c427",
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 20,
+  },
+  searchRow: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  searchInput: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    marginRight: 8,
+    color: "#333",
+  },
+  searchButton: {
+    backgroundColor: "#FFA000",
+    borderRadius: 8,
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
+  searchButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  createButton: {
+    marginTop: 10,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 8,
+    alignItems: "center",
+    padding: 10,
+  },
+  createButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  /***************************************
+   * Modal
+   ***************************************/
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)", // Slight dark overlay
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    width: "85%",
+    borderRadius: 12,
+    padding: 20,
+    backgroundColor: "#fff",
+
+    // iOS Shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+
+    // Android Shadow
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 16,
+    textAlign: "center",
+    color: "#333",
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    marginBottom: 12,
+    fontSize: 16,
+    color: "#333",
+  },
+  modalButtonRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginLeft: 10,
+  },
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+});

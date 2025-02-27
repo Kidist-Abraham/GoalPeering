@@ -1,12 +1,21 @@
+// OwnedGoalsScreen.tsx
+
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, Button,TouchableOpacity, Alert, StyleSheet } from "react-native";
-import { useAuth } from "./contexts/AuthContext"; 
+import {
+  View,
+  Text,
+  FlatList,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import { useAuth } from "./contexts/AuthContext";
 import { useRouter } from "expo-router";
 import { Goals, fetchOwnedGoals, LeaveGoals, CompleteGoals } from "./api/goalsApi";
 import Constants from "expo-constants";
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL;
-
 
 export default function OwnedGoalsScreen() {
   const { token } = useAuth();
@@ -20,7 +29,6 @@ export default function OwnedGoalsScreen() {
     setLoading(true);
     try {
       const data = await fetchOwnedGoals(token);
-      console.log("hereeeee", data)
       setGoals(data);
     } catch (error) {
       console.error("Error loading owned goals:", error);
@@ -30,160 +38,220 @@ export default function OwnedGoalsScreen() {
     }
   };
 
+  useEffect(() => {
+    loadOwnedGoals();
+  }, []);
+
   const handleComplete = async (goalId: number) => {
     if (!token) return;
     try {
       await CompleteGoals(goalId, token);
-      Alert.alert("Success", "You complete the goal");
+      Alert.alert("Success", "You completed the goal!");
       loadOwnedGoals();
     } catch (error) {
       console.error("Complete goal error:", error);
-      Alert.alert("Error", "Failed to leave the goal.");
+      Alert.alert("Error", "Failed to complete the goal.");
     }
   };
 
   const handleLeave = async (goalId: number) => {
     if (!token) return;
-    try {
 
-      Alert.alert(
-        'Confirmation',
-        'Did you compelte the goal?',
-        [
-          {
-            text: 'Yes',
-            onPress: () => handleComplete(goalId),
-            style: 'default',
-          },
-          {
-            text: 'No',
-            onPress: () => {
-              console.log('User pressed No');
-              Alert.alert(
-                'Confirmation',
-                'Are you sure you want to leave?',
-                [
-                  {
-                    text: 'Yes',
-                    onPress: () => {
-                       LeaveGoals(goalId, token);
-                       Alert.alert("Success", "You left the group");
-                    },
-                    style: 'default',
+    Alert.alert(
+      "Confirmation",
+      "Did you complete the goal?",
+      [
+        {
+          text: "Yes",
+          onPress: () => handleComplete(goalId),
+          style: "default",
+        },
+        {
+          text: "No",
+          onPress: () => {
+            Alert.alert(
+              "Confirmation",
+              "Are you sure you want to leave?",
+              [
+                {
+                  text: "Yes",
+                  onPress: async () => {
+                    try {
+                      await LeaveGoals(goalId, token);
+                      Alert.alert("Success", "You left the group.");
+                      loadOwnedGoals();
+                    } catch (err) {
+                      console.error("Leave group error:", err);
+                      Alert.alert("Error", "Failed to leave the group.");
+                    }
                   },
-                  {
-                    text: 'No',
-                    onPress: () => {
-                      console.log('User pressed No');
-                 
-                    },
+                  style: "default",
+                },
+                {
+                  text: "No",
+                  onPress: () => {
+                    // do nothing
                   },
-                ],
-                { cancelable: false },
-              );
-         
-            },
+                },
+              ],
+              { cancelable: false }
+            );
           },
-        ],
-        { cancelable: false },
-      );
-
-      
-      loadOwnedGoals();
-
-     
-    } catch (error) {
-      console.error("Leave group error:", error);
-      Alert.alert("Error", "Failed to leave the group.");
-    }
-  };
-
-  useEffect(() => {
-    loadOwnedGoals();
-  }, []);
-
-  const renderGoal = ({ item }: { item: Goals}) => {
-    return (
-      <View style={styles.goalItem}>
-      <TouchableOpacity
-        style={styles.goalItem}
-        onPress={() => router.push(`/goal/${item.id}`)} 
-      >
-        <Text style={styles.goalName}>{item.name}</Text>
-        <Text style={styles.goalDescription}>{item.description}</Text>
-      </TouchableOpacity>
-      <View style={styles.buttonRow}>
-      <Button
-        title="Leave"
-        color="#f44336"
-        onPress={() => handleLeave(item.id)}
-      />
-      <Button
-          title="Complete"
-          color="#4CAF50"
-          onPress={() => handleComplete(item.id)}
-        />
-    </View>
-    </View>
+        },
+      ],
+      { cancelable: false }
     );
   };
 
+  const renderGoal = ({ item }: { item: Goals }) => {
+    return (
+      <View style={styles.card}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => router.push(`/goal/${item.id}`)}
+        >
+          <Text style={styles.goalName}>{item.name}</Text>
+          <Text style={styles.goalDescription}>{item.description}</Text>
+        </TouchableOpacity>
+
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={[styles.button, styles.dangerButton]}
+            onPress={() => handleLeave(item.id)}
+          >
+            <Text style={styles.buttonText}>Leave</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.successButton]}
+            onPress={() => handleComplete(item.id)}
+          >
+            <Text style={styles.buttonText}>Complete</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Your Owned Goals</Text>
-      {loading && <Text>Loading...</Text>}
-      <FlatList
-        data={goals}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderGoal}
-        ListEmptyComponent={!loading ? <Text>No owned goals found.</Text> : null}
-      />
+    <View style={styles.screen}>
+      {/* Header */}
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Your Owned Goals</Text>
+      </View>
+
+      {/* Content */}
+      <View style={styles.contentContainer}>
+        {loading && (
+          <ActivityIndicator
+            size="large"
+            color="#95c427"
+            style={{ marginVertical: 20 }}
+          />
+        )}
+        <FlatList
+          data={goals}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderGoal}
+          ListEmptyComponent={
+            !loading ? (
+              <Text style={styles.emptyText}>No owned goals found.</Text>
+            ) : null
+          }
+        />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  /*************************************
+   * Screen & Header
+   *************************************/
+  screen: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "transparent",
+    backgroundColor: "#edf5f0",
   },
-  title: {
-    fontSize: 20,
-    marginBottom: 16,
+  headerContainer: {
+    backgroundColor: "#95c427",
+    paddingTop: 60,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "700",
     color: "#fff",
   },
-  goalItem: {
+
+  /*************************************
+   * Content
+   *************************************/
+  contentContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  emptyText: {
+    textAlign: "center",
+    color: "#333",
+    fontSize: 16,
+    marginTop: 20,
+  },
+
+  /*************************************
+   * Card
+   *************************************/
+  card: {
     backgroundColor: "#fff",
-    padding: 12,
     borderRadius: 8,
+    padding: 12,
     marginBottom: 12,
 
+    // iOS Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
+    shadowRadius: 4,
+
+    // Android Shadow
     elevation: 2,
   },
   goalName: {
     fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 6,
     color: "#333",
+    marginBottom: 4,
   },
   goalDescription: {
     fontSize: 14,
     color: "#555",
     marginBottom: 10,
   },
+
+  /*************************************
+   * Button Row & Buttons
+   *************************************/
   buttonRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
   },
+  button: {
+    borderRadius: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginLeft: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  dangerButton: {
+    backgroundColor: "#f44336",
+  },
+  successButton: {
+    backgroundColor: "#95c427",
+  },
 });
-
-
-
-
-
-

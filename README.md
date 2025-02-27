@@ -1,6 +1,6 @@
-# Collections & Contributions Frontend
+# Goal Peering Frontend
 
-This repository contains the **frontend** for the "Collections & Contributions" app, built using **React Native** and **Expo**. It provides an interface to create, list, update, and delete "collections," as well as upload files (contributions) depending on the user’s authentication status. The app can be run on a real device or simulator, scanning a QR code to preview via Expo.
+This repository contains the **frontend** for the "Goal Peering" app, built using **React Native** and **Expo**. It provides an interface to list, search, create, and join "goals" as well as sharing experiance through tip and success story sharing or chatting in a group dedicated for the goal. One can also look at group progress and also record on complete. The app can be run on a real device or simulator, scanning a QR code to preview via Expo.
 
 ## Table of Contents
 
@@ -12,14 +12,14 @@ This repository contains the **frontend** for the "Collections & Contributions" 
 
 ## 1. Overview
 
-The **Collections & Contributions** frontend is built with **React Native** + **Expo** to provide a mobile interface for:
+The **Goal Peering** frontend is built with **React Native** + **Expo** to provide a mobile interface for:
 
-- **User Authentication** (JWT)  
-- Creating and listing **Collections**  
-- Uploading and viewing **Contributions** for each collection  
-- Deleting a collection if it’s owned by the current user
+- User Authentication (JWT)  
+- Creating, listing, searching, joining goals  
+- Update and viewing progress for each goals
+- Engagge ina  chat grioup created for the peer
 
-It communicates with the **backend** (see [the backend repo](https://github.com/Kidist-Abraham/AlphaCollectionsApi)) which can switch between AWS S3 or local file storage. This README explains how to install, configure, and run the app—particularly via the **Expo** QR code approach for easy testing on real devices.
+It communicates with the **backend** (see [the backend repo](https://github.com/Kidist-Abraham/GoalPeeringApi)). This README explains how to install, configure, and run the app—particularly via the **Expo** QR code approach for easy testing on real devices.
 
 ---
 
@@ -44,8 +44,8 @@ The ip address is your machine’s IP address. It can for example be retrieved u
 Clone the repo:
 
 ```bash
-git clone https://github.com/Kidist-Abraham/AlphaCollections.git
-cd AlphaCollections
+git clone https://github.com/Kidist-Abraham/GoalPeering.git
+cd GoalPeering
 ```
 
 Install dependencies:
@@ -70,4 +70,5 @@ When you run `npx expo start`, Expo CLI will open a terminal/Metro bundler inter
 
 -> Scan the QR code displayed in your terminal or web interface using the Expo Go app.
 
--> The app will load on your real device—any changes you make in the code will auto-refresh.√
+-> The app will load on your real device—any changes you make in the code will auto-refresh.
+

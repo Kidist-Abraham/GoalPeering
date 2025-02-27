@@ -1,52 +1,68 @@
 // app/goal/[id].tsx
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, Alert, StyleSheet, TouchableOpacity, ScrollView,  TextInput, Modal} from "react-native";
-import * as Progress from 'react-native-progress';
+import {
+  View,
+  Text,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  Modal,
+  ActivityIndicator,
+} from "react-native";
+import * as Progress from "react-native-progress";
 import { useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import { useRouter } from "expo-router";
 import Constants from "expo-constants";
 import { AddSuccessStory, AddTips, CompleteGoals } from "../api/goalsApi";
+
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL;
-const FRONTED_BASE_URL = Constants.expoConfig?.extra?.FRONTED_BASE_URL
+const FRONTED_BASE_URL = Constants.expoConfig?.extra?.FRONTED_BASE_URL;
+
 interface Goal {
   id: number;
   name: string;
   description: string;
   accomplishedCount: number;
   memberCount: number;
-  tips: [{
-    title: string;
-    content: string;
-    owner: string
-    id: number
-    numberOfUpVote: number
-    numberOfDownVote: number
-}],
-  successStories: [{
-    title: string;
-    content: string;
-    owner: string
-    id: number
-}],
+  tips: [
+    {
+      title: string;
+      content: string;
+      owner: string;
+      id: number;
+      numberOfUpVote: number;
+      numberOfDownVote: number;
+    }
+  ];
+  successStories: [
+    {
+      title: string;
+      content: string;
+      owner: string;
+      id: number;
+    }
+  ];
 }
 
-type FormMode = 'tip' | 'story' | null;
+type FormMode = "tip" | "story" | null;
 
 export default function GoalScreen() {
   const { id } = useLocalSearchParams() as { id: string };
-  const goalId = id
+  const goalId = id;
   const { token } = useAuth();
+  const router = useRouter();
 
   const [goal, setGoal] = useState<Goal | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [formMode, setFormMode] = useState<FormMode>(null);
 
-  const [newTitle, setNewTitle] = useState('');
-  const [newContent, setNewContent] = useState('');
+  const [newTitle, setNewTitle] = useState("");
+  const [newContent, setNewContent] = useState("");
 
   // Load the goal details
   const loadGoal = async () => {
@@ -73,13 +89,12 @@ export default function GoalScreen() {
     title: string;
     content: string;
     itemType: "tip" | "successStory";
-    owner?: string;           
-    tipId?: number;           
+    owner?: string;
+    tipId?: number;
     tipNumberOfUpVote?: number;
     tipNumberOfDownVote?: number;
   };
 
-  
   const ExpandableItem: React.FC<ExpandableItemProps> = ({
     title,
     content,
@@ -90,83 +105,64 @@ export default function GoalScreen() {
     tipNumberOfDownVote = 0,
   }) => {
     const [expanded, setExpanded] = useState(false);
-  
-    // We keep local state to show the current up/down counts in the UI.
-    // If we want to keep them fully in sync with the server, 
-    // we might do a re-fetch after each vote instead.
     const [upvoteCount, setUpvoteCount] = useState(tipNumberOfUpVote);
     const [downvoteCount, setDownvoteCount] = useState(tipNumberOfDownVote);
-  
+
     const handleVote = async (voteValue: number) => {
       if (!goalId || !tipId) return;
-  
       try {
-        // POST /:goalId/tips/:tipId/vote
-        // Body: { voteValue: +1 or -1 }
-        const url = `${API_BASE_URL}/goal/${goalId}/tips/${tipId}/vote`;
-
-        const response = await axios.post(`${API_BASE_URL}/goal/${goalId}/tips/${tipId}/vote`, {
-          voteValue
-        }, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-          console.log("Voted successfully!");
-  
-          // Naive local update: If user upvotes, increment upvoteCount.
-          // If user downvotes, increment downvoteCount.
-          // For a more robust approach, you'd check whether the user previously voted, etc.
-          if (voteValue === 1) {
-            setUpvoteCount(tipNumberOfUpVote + 1);
-            setDownvoteCount(tipNumberOfDownVote)
-          } else {
-            setUpvoteCount(tipNumberOfUpVote);
-            setDownvoteCount(tipNumberOfDownVote + 1)
+        await axios.post(
+          `${API_BASE_URL}/goal/${goalId}/tips/${tipId}/vote`,
+          { voteValue },
+          {
+            headers: { Authorization: `Bearer ${token}` },
           }
-        
+        );
+        console.log("Voted successfully!");
+
+        // Simple local update for demonstration:
+        if (voteValue === 1) {
+          setUpvoteCount((prev) => prev + 1);
+        } else {
+          setDownvoteCount((prev) => prev + 1);
+        }
       } catch (error) {
         console.error("Error voting:", error);
       }
     };
-  
+
     return (
-      <View style={styles.itemContainer}>
-        {/* Header Row: arrow + title + (owner) */}
+      <View style={styles.card}>
         <TouchableOpacity
+          style={styles.cardHeader}
           onPress={() => setExpanded(!expanded)}
-          style={styles.headerRow}
         >
-          <Text style={styles.arrow}>{expanded ? "▼" : "▶"}</Text>
-  
-          <View style={styles.titleOwnerContainer}>
-            <Text style={styles.itemTitle}>{title}</Text>
-            {owner && (
-              <Text style={styles.owner}> (by {owner})</Text>
-            )}
+          <Text style={styles.cardArrow}>{expanded ? "▼" : "▶"}</Text>
+          <View style={styles.cardTitleContainer}>
+            <Text style={styles.cardTitle}>{title}</Text>
+            {owner && <Text style={styles.cardOwner}> (by {owner})</Text>}
           </View>
         </TouchableOpacity>
-  
-        {/* Content (only visible if expanded) */}
+
         {expanded && (
-          <View style={styles.contentContainer}>
-            <Text style={styles.itemContent}>{content}</Text>
-  
-            {/* If it's a tip, show up/down vote buttons and counts */}
+          <View style={styles.cardContent}>
+            <Text style={styles.cardText}>{content}</Text>
             {itemType === "tip" && goalId && tipId && (
-              <View style={styles.voteButtonsContainer}>
+              <View style={styles.cardActions}>
                 <TouchableOpacity
-                  style={styles.voteButton}
+                  style={[styles.actionButton, { marginRight: 16 }]}
                   onPress={() => handleVote(1)}
                 >
-                  <Text style={styles.voteButtonText}>
+                  <Text style={styles.actionButtonText}>
                     👍 Upvote ({upvoteCount})
                   </Text>
                 </TouchableOpacity>
-  
+
                 <TouchableOpacity
-                  style={styles.voteButton}
+                  style={styles.actionButton}
                   onPress={() => handleVote(-1)}
                 >
-                  <Text style={styles.voteButtonText}>
+                  <Text style={styles.actionButtonText}>
                     👎 Downvote ({downvoteCount})
                   </Text>
                 </TouchableOpacity>
@@ -182,135 +178,162 @@ export default function GoalScreen() {
     if (!token) return;
     try {
       await CompleteGoals(Number(id), token);
-      Alert.alert("Success", "You complete the goal");
+      Alert.alert("Success", "You completed the goal!");
     } catch (error) {
       console.error("Complete goal error:", error);
-      Alert.alert("Error", "Failed to complete a goal.");
+      Alert.alert("Error", "Failed to complete the goal.");
     }
   };
 
   const handleOpenForm = (mode: FormMode) => {
     setFormMode(mode);
-    setNewTitle('');
-    setNewContent('');
+    setNewTitle("");
+    setNewContent("");
     setModalVisible(true);
   };
 
-  // Closes the modal
   const handleCloseForm = () => {
     setModalVisible(false);
     setFormMode(null);
   };
 
   const handleAddItem = async () => {
-    if (!token) return; {
+    if (!token) return;
     if (!newTitle.trim() || !newContent.trim()) {
+      Alert.alert("Validation", "Please enter a title and content.");
       return;
     }
 
-    if (formMode === 'tip') {
-      try {
-        const tip = { title: newTitle, content: newContent }
-        await AddTips(Number(id),token,tip);
-        Alert.alert("Success", "You added a tip");
-      } catch (error) {
-        console.error("Add tip error:", error);
-        Alert.alert("Error", "Failed to add a tip");
+    try {
+      if (formMode === "tip") {
+        await AddTips(Number(id), token, {
+          title: newTitle,
+          content: newContent,
+        });
+        Alert.alert("Success", "You added a tip!");
+      } else if (formMode === "story") {
+        await AddSuccessStory(Number(id), token, {
+          title: newTitle,
+          content: newContent,
+        });
+        Alert.alert("Success", "You added a success story!");
       }
-      
-    } else if (formMode === 'story') {
-      try {
-        const successStory = { title: newTitle, content: newContent }
-        await AddSuccessStory(Number(id),token,successStory);
-        Alert.alert("Success", "You added a success story");
-      } catch (error) {
-        console.error("Add success story error:", error);
-        Alert.alert("Error", "Failed to add a success story");
-      }
-      
+      handleCloseForm();
+      // Reload goal to immediately see the update
+      loadGoal();
+    } catch (error) {
+      console.error("Add item error:", error);
+      Alert.alert("Error", "Failed to add new item.");
     }
-    handleCloseForm();
-    router.push(`/goal/${id}`)
-  }
   };
-
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <Text>Loading goal...</Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#95c427" />
+        <Text style={{ marginTop: 10 }}>Loading goal...</Text>
       </View>
     );
   }
 
   if (!goal) {
     return (
-      <View style={styles.container}>
+      <View style={styles.loadingContainer}>
         <Text>Goal not found.</Text>
       </View>
     );
   }
 
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{goal.name}</Text>
-      <Text style={styles.description}>{goal.description}</Text>
-      <Text style={styles.members}>Members: {goal.memberCount}</Text>
-      <Text style={styles.members}>Acomplished: {goal.accomplishedCount}</Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', padding: 20 }}>
-
-      <View style={{ flex: 1, marginRight: 10 }}>
-        <Progress.Bar 
-          progress={goal.accomplishedCount / goal.memberCount} 
-          width={null} 
-          color="green" 
-          borderRadius={5} 
-        />
+    <View style={styles.screen}>
+      {/* Header Section */}
+      <View style={styles.headerContainer}>
+        <Text style={styles.goalTitle}>{goal.name}</Text>
+        <Text style={styles.goalDescription}>{goal.description}</Text>
+        <View style={styles.progressContainer}>
+          <Progress.Bar
+            progress={goal.accomplishedCount / goal.memberCount}
+            width={null}
+            color="#ffffff"
+            unfilledColor="rgba(255,255,255,0.3)"
+            borderWidth={0}
+            borderRadius={8}
+            height={10}
+          />
+          <Text style={styles.progressText}>
+            {`${goal.accomplishedCount} / ${goal.memberCount} accomplished`}
+          </Text>
+        </View>
+        <View style={styles.headerButtonsRow}>
+          <TouchableOpacity style={[styles.headerButton, styles.completeButton]} onPress={handleComplete}>
+            <Text style={styles.headerButtonText}>Mark as Complete</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.headerButton, styles.chatButton]} onPress={() => router.push(`/chat/${id}`)}>
+            <Text style={styles.headerButtonText}>Go to Chat</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      
 
-      <Text>{`${goal.accomplishedCount} / ${goal.memberCount}`}</Text>
-    </View>
-    <Button
-          title="Complete"
-          color="#4CAF50"
-          onPress={() => handleComplete()}
-        />
+      {/* Content Section */}
+      <ScrollView style={styles.contentSection}>
+        {/* Tips */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Tips</Text>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => handleOpenForm("tip")}
+            >
+              <Text style={styles.addButtonText}>+ Add Tip</Text>
+            </TouchableOpacity>
+          </View>
+          {goal.tips && goal.tips.length > 0 ? (
+            goal.tips.map((tip, index) => (
+              <ExpandableItem
+                key={`tip-${index}`}
+                title={tip.title}
+                content={tip.content}
+                owner={tip.owner}
+                itemType="tip"
+                tipId={tip.id}
+                tipNumberOfUpVote={tip.numberOfUpVote}
+                tipNumberOfDownVote={tip.numberOfDownVote}
+              />
+            ))
+          ) : (
+            <Text style={styles.emptyText}>No tips yet.</Text>
+          )}
+        </View>
 
-    <Button title="Go to Chat" onPress={() => router.push(`/chat/${id}`)} />
-    <ScrollView style={styles.container}>
-    
-      <Text style={styles.sectionTitle}>Tips</Text>
-      <Button title="Add Tips" onPress={() => handleOpenForm('tip')} color="#FF9800" />
-      {goal.tips.map((tip, index) => (
-        <ExpandableItem 
-          key={`tip-${index}`} 
-          title={tip.title} 
-          content={tip.content}
-          owner={tip.owner}
-          itemType="tip"
-          tipId={tip.id}
-          tipNumberOfUpVote={tip.numberOfUpVote}
-          tipNumberOfDownVote={tip.numberOfDownVote}
-        />
-      ))}
+        {/* Success Stories */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Success Stories</Text>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => handleOpenForm("story")}
+            >
+              <Text style={styles.addButtonText}>+ Add Story</Text>
+            </TouchableOpacity>
+          </View>
+          {goal.successStories && goal.successStories.length > 0 ? (
+            goal.successStories.map((story, index) => (
+              <ExpandableItem
+                key={`story-${index}`}
+                title={story.title}
+                content={story.content}
+                owner={story.owner}
+                itemType="successStory"
+              />
+            ))
+          ) : (
+            <Text style={styles.emptyText}>No success stories yet.</Text>
+          )}
+        </View>
+      </ScrollView>
 
-
-      <Text style={styles.sectionTitle}>Success Stories</Text>
-      <Button title="Add Story" onPress={() => handleOpenForm('story')} color="#FF9800" />
-      {goal.successStories.map((story, index) => (
-        <ExpandableItem 
-          key={`story-${index}`} 
-          title={story.title} 
-          content={story.content} 
-          owner= {story.owner}
-          itemType="successStory"
-        />
-      ))}
-    </ScrollView>
-
-    <Modal
+      {/* Modal for Adding Tips/Stories */}
+      <Modal
         visible={modalVisible}
         transparent={true}
         animationType="slide"
@@ -319,37 +342,39 @@ export default function GoalScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>
-              {formMode === 'tip' ? 'Add Tip' : 'Add Success Story'}
+              {formMode === "tip" ? "Add Tip" : "Add Success Story"}
             </Text>
 
             <TextInput
               style={styles.input}
               placeholder="Enter title"
+              placeholderTextColor="#888"
               value={newTitle}
               onChangeText={setNewTitle}
             />
 
             <TextInput
-              style={[styles.input, { height: 80 }]}
+              style={[styles.input, { height: 100 }]}
               multiline
               placeholder="Enter content/description"
+              placeholderTextColor="#888"
               value={newContent}
               onChangeText={setNewContent}
             />
 
-            <View style={styles.buttonRow}>
+            <View style={styles.modalButtonRow}>
               <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
+                style={[styles.modalButton, { backgroundColor: "#888" }]}
                 onPress={handleCloseForm}
               >
-                <Text style={styles.buttonText}>Cancel</Text>
+                <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.button, styles.addButton]}
+                style={[styles.modalButton, { backgroundColor: "#95c427" }]}
                 onPress={handleAddItem}
               >
-                <Text style={styles.buttonText}>Add</Text>
+                <Text style={styles.modalButtonText}>Add</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -360,146 +385,223 @@ export default function GoalScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  /*******************************
+   * Screen & General Layout
+   *******************************/
+  screen: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "transparent",
+    backgroundColor: "#edf5f0",
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginHorizontal: 16,
-    marginTop: 16,
-  },
-  expandableItem: {
-    backgroundColor: '#f1f1f1',
-    marginVertical: 5,
-    marginHorizontal: 16,
-    borderRadius: 5,
-  },
-  itemContentContainer: {
-    paddingHorizontal: 12,
-    paddingBottom: 12,
-  },
-  modalOverlay: {
+  loadingContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
-  modalContainer: {
-    width: '85%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 16,
+
+  /*******************************
+   * Header Section
+   *******************************/
+  headerContainer: {
+    backgroundColor: "#95c427",
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 8,
-    marginBottom: 10,
-    fontSize: 16,
-  },
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-    marginLeft: 10,
-  },
-  cancelButton: {
-    backgroundColor: '#888',
-  },
-  addButton: {
-    backgroundColor: '#28a745',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 10,
+  goalTitle: {
+    fontSize: 26,
+    fontWeight: "700",
     color: "#fff",
+    marginBottom: 8,
   },
-  description: {
+  goalDescription: {
     fontSize: 16,
-    marginBottom: 10,
-    color: "#ddd",
+    color: "#e8f5e9",
+    marginBottom: 20,
+    lineHeight: 22,
   },
-  members: {
-    fontSize: 16,
-    color: "#ccc",
+  progressContainer: {
     marginBottom: 20,
   },
-  buttonRow: {
+  progressText: {
+    marginTop: 8,
+    color: "#fff",
+    fontSize: 14,
+    textAlign: "right",
+  },
+  headerButtonsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: 10,
   },
-  subcontainer: {
+  headerButton: {
     flex: 1,
-    padding: 16,
+    alignItems: "center",
+    padding: 12,
+    marginHorizontal: 5,
+    borderRadius: 8,
+  },
+  completeButton: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  chatButton: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  headerButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+
+  /*******************************
+   * Content Section
+   *******************************/
+  contentSection: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  section: {
+    marginBottom: 30,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
   },
   sectionTitle: {
-    fontWeight: 'bold',
-    fontSize: 18,
-    marginVertical: 10,
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#333",
   },
-  itemContainer: {
-    backgroundColor: '#f1f1f1',
-    marginVertical: 5,
-    borderRadius: 5,
+  addButton: {
+    backgroundColor: "#FFA000",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
   },
-  titleOwnerContainer: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    flexWrap: "wrap",
-  },
-  itemTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  voteButtonsContainer: {
-    flexDirection: "row",
-    gap: 16, // or use marginRight on each button if you prefer
-  },
-  voteButton: {
-    backgroundColor: "#eee",
-    borderRadius: 4,
-    padding: 6,
-  },
-  voteButtonText: {
-    fontSize: 14,
+  addButtonText: {
+    color: "#fff",
     fontWeight: "600",
   },
-  owner: {
+  emptyText: {
     fontSize: 14,
     fontStyle: "italic",
-    color: "#555",
+    color: "#999",
+    marginTop: 10,
   },
-  contentContainer: {
-    paddingHorizontal: 12,
-    paddingBottom: 12,
+
+  /*******************************
+   * Expandable Card Item
+   *******************************/
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    marginBottom: 10,
+    padding: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  itemContent: {
-    fontSize: 14,
-    color: '#333',
-  },
-  headerRow: {
+  cardHeader: {
     flexDirection: "row",
     alignItems: "center",
   },
-  arrow: {
+  cardArrow: {
+    fontSize: 18,
+    marginRight: 8,
+    color: "#444",
+  },
+  cardTitleContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  cardTitle: {
     fontSize: 16,
-    marginRight: 4,
+    fontWeight: "600",
+    color: "#333",
+  },
+  cardOwner: {
+    fontSize: 14,
+    fontStyle: "italic",
+    color: "#777",
+  },
+  cardContent: {
+    marginTop: 8,
+  },
+  cardText: {
+    fontSize: 14,
+    color: "#444",
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  cardActions: {
+    flexDirection: "row",
+  },
+  actionButton: {
+    backgroundColor: "#eeeeee",
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#444",
+  },
+
+  /*******************************
+   * Modal
+   *******************************/
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    width: "85%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 16,
+    textAlign: "center",
+    color: "#333",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 12,
+    fontSize: 16,
+    color: "#333",
+  },
+  modalButtonRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginLeft: 10,
+  },
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

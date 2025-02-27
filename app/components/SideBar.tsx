@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useAuth } from "../contexts/AuthContext";
 import { useRouter } from "expo-router";
 
@@ -48,33 +48,29 @@ export default function Sidebar({ onClose }: SidebarProps) {
     onClose();
   };
 
-
-
-  console.log("Sidebar component mounted!"); // For debugging
-
   return (
     <View style={styles.sidebarContainer}>
-      <Text style={styles.menuTitle}>Menu</Text>
+ 
 
-      <Pressable style={styles.menuButton} onPress={handleHome}>
+      <TouchableOpacity style={styles.menuButton} onPress={handleHome}>
         <Text style={styles.menuButtonText}>Home</Text>
-      </Pressable>
+      </TouchableOpacity>
 
-      <Pressable style={styles.menuButton} onPress={handleLogout}>
-        <Text style={styles.menuButtonText}>Logout</Text>
-      </Pressable>
-      
-      <Pressable style={styles.menuButton} onPress={onClose}>
-        <Text style={styles.menuButtonText}>Close</Text>
-      </Pressable>
-
-      <Pressable style={styles.menuButton} onPress={handleJoinedGoal}>
+      <TouchableOpacity style={styles.menuButton} onPress={handleJoinedGoal}>
         <Text style={styles.menuButtonText}>Joined Goals</Text>
-      </Pressable>
+      </TouchableOpacity>
 
-      <Pressable style={styles.menuButton} onPress={handleOwnedGoal}>
+      <TouchableOpacity style={styles.menuButton} onPress={handleOwnedGoal}>
         <Text style={styles.menuButtonText}>My Goals</Text>
-      </Pressable>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.menuButton} onPress={handleLogout}>
+        <Text style={styles.menuButtonText}>Logout</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+        <Text style={styles.closeButtonText}>Close</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -83,33 +79,58 @@ const styles = StyleSheet.create({
   sidebarContainer: {
     flex: 1,
     width: 250,
-    backgroundColor: "#f5f5f5",
-    padding: 20,
+    backgroundColor: "#edf5f0",
+    padding: 55,
 
-    // Shadows for iOS
+    // iOS Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
 
-    // Shadows for Android
+    // Android Shadow
     elevation: 5,
   },
   menuTitle: {
     fontSize: 22,
-    fontWeight: "600",
+    fontWeight: "700",
     marginBottom: 20,
+    color: "#95c427",
   },
   menuButton: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
     paddingVertical: 12,
+    paddingHorizontal: 16,
     marginBottom: 12,
-    backgroundColor: "#e0e0e0",
-    borderRadius: 6,
+
+    // iOS Shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+
+    // Android Shadow
+    elevation: 2,
+
     alignItems: "center",
-    justifyContent: "center",
   },
   menuButtonText: {
     fontSize: 16,
     color: "#333",
+    fontWeight: "600",
+  },
+  closeButton: {
+    backgroundColor: "#FFA000",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 30,
+    alignItems: "center",
+  },
+  closeButtonText: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "600",
   },
 });
