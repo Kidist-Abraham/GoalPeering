@@ -1,5 +1,3 @@
-// JoinedGoalsScreen.tsx
-
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -69,7 +67,6 @@ export default function JoinedGoalsScreen() {
         {
           text: "No",
           onPress: () => {
-            // Secondary confirmation
             Alert.alert(
               "Confirmation",
               "Are you sure you want to leave?",
@@ -91,7 +88,6 @@ export default function JoinedGoalsScreen() {
                 {
                   text: "No",
                   onPress: () => {
-                    // do nothing
                   },
                 },
               ],
@@ -135,12 +131,9 @@ export default function JoinedGoalsScreen() {
 
   return (
     <View style={styles.screen}>
-      {/* Header */}
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Your Joined Goals</Text>
       </View>
-
-      {/* Content */}
       <View style={styles.contentContainer}>
         {loading && (
           <ActivityIndicator
@@ -165,9 +158,6 @@ export default function JoinedGoalsScreen() {
 }
 
 const styles = StyleSheet.create({
-  /*************************************
-   * Screen & Header
-   *************************************/
   screen: {
     flex: 1,
     backgroundColor: "#edf5f0",
@@ -185,10 +175,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#fff",
   },
-
-  /*************************************
-   * Content
-   *************************************/
   contentContainer: {
     flex: 1,
     paddingHorizontal: 20,
@@ -200,23 +186,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 20,
   },
-
-  /*************************************
-   * Card
-   *************************************/
   card: {
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
-
-    // iOS Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
-
-    // Android Shadow
     elevation: 2,
   },
   goalName: {
@@ -230,10 +208,6 @@ const styles = StyleSheet.create({
     color: "#555",
     marginBottom: 10,
   },
-
-  /*************************************
-   * Button Row & Buttons
-   *************************************/
   buttonRow: {
     flexDirection: "row",
     justifyContent: "flex-end",

@@ -1,4 +1,3 @@
-// app/_layout.tsx (or RootLayout.tsx)
 import { Stack } from "expo-router";
 import React, { useState, useRef, useEffect } from "react";
 import {
@@ -10,7 +9,7 @@ import {
   Platform,
 } from "react-native";
 import { AuthProvider } from "./contexts/AuthContext";
-import Sidebar from "./components/SideBar"; // or wherever your Sidebar component is located
+import Sidebar from "./components/SideBar";
 import { LinearGradient } from "expo-linear-gradient";
 
 export default function RootLayout() {
@@ -33,7 +32,6 @@ export default function RootLayout() {
       <View style={{ flex: 1 }}>
         {/* Background Gradient */}
         <LinearGradient
-          // You can tweak these colors to match your app's theme.
           colors={["#b7e5f7", "#70a2b5"]}
           style={StyleSheet.absoluteFillObject}
         />
@@ -71,9 +69,6 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-  /************************************
-   * Hamburger Button
-   ************************************/
   hamburgerContainer: {
     position: "absolute",
     top: 10,
@@ -85,12 +80,10 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    // Shadows for iOS
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
-    // Shadow for Android
     elevation: 2,
   },
   hamburgerButtonText: {
@@ -98,10 +91,6 @@ const styles = StyleSheet.create({
     color: "#333",
     fontWeight: "600",
   },
-
-  /************************************
-   * Sidebar
-   ************************************/
   sidebarWrapper: {
     position: "absolute",
     top: 0,
@@ -110,15 +99,10 @@ const styles = StyleSheet.create({
     width: 250,
     zIndex: 998,
     backgroundColor: "#fff",
-    // You can also add some transparency if you like:
-    // backgroundColor: 'rgba(255, 255, 255, 0.8)',
-
-    // Shadow for iOS
     shadowColor: "#000",
     shadowOffset: { width: 3, height: 0 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    // Shadow for Android
     elevation: 5,
   },
 });

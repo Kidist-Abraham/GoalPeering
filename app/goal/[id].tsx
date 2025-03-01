@@ -219,7 +219,6 @@ export default function GoalScreen() {
         Alert.alert("Success", "You added a success story!");
       }
       handleCloseForm();
-      // Reload goal to immediately see the update
       loadGoal();
     } catch (error) {
       console.error("Add item error:", error);
@@ -276,7 +275,6 @@ export default function GoalScreen() {
 
       {/* Content Section */}
       <ScrollView style={styles.contentSection}>
-        {/* Tips */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Tips</Text>
@@ -385,9 +383,6 @@ export default function GoalScreen() {
 }
 
 const styles = StyleSheet.create({
-  /*******************************
-   * Screen & General Layout
-   *******************************/
   screen: {
     flex: 1,
     backgroundColor: "#edf5f0",
@@ -397,10 +392,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
-  /*******************************
-   * Header Section
-   *******************************/
   headerContainer: {
     backgroundColor: "#95c427",
     paddingHorizontal: 20,
@@ -452,10 +443,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
   },
-
-  /*******************************
-   * Content Section
-   *******************************/
   contentSection: {
     flex: 1,
     paddingHorizontal: 20,
@@ -491,10 +478,6 @@ const styles = StyleSheet.create({
     color: "#999",
     marginTop: 10,
   },
-
-  /*******************************
-   * Expandable Card Item
-   *******************************/
   card: {
     backgroundColor: "#fff",
     borderRadius: 8,
@@ -552,10 +535,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#444",
   },
-
-  /*******************************
-   * Modal
-   *******************************/
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",

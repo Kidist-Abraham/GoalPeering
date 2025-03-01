@@ -81,14 +81,10 @@ const styles = StyleSheet.create({
     width: 250,
     backgroundColor: "#edf5f0",
     padding: 55,
-
-    // iOS Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
-
-    // Android Shadow
     elevation: 5,
   },
   menuTitle: {
@@ -103,16 +99,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginBottom: 12,
-
-    // iOS Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-
-    // Android Shadow
     elevation: 2,
-
     alignItems: "center",
   },
   menuButtonText: {

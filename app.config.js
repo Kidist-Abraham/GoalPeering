@@ -1,9 +1,5 @@
 export default ({ config }) => ({
-    // Spread the incoming config so it respects anything in app.json by default.
-    // If there's no app.json anymore, Expo uses internal defaults plus environment variables.
     ...config,
-
-    // Example: override or ensure these fields are set
     name: "goal-peering",
     slug: "goal-peering",
     version: "1.0.0",
@@ -51,14 +47,12 @@ export default ({ config }) => ({
     },
 
     extra: {
-      // Spread anything that might already be in config.extra
       ...config.extra,
 
       API_BASE_URL: "https://goal-peering-b4cd0d5ea8d8.herokuapp.com",
       FRONTED_BASE_URL: "https://goal-peering-b4cd0d5ea8d8.herokuapp.com",
 
       eas: {
-        // The EAS projectId
         projectId: "1afac247-11bd-4b24-9f7b-32e2108dc6f6",
       },
     },

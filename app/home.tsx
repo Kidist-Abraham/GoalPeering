@@ -1,4 +1,3 @@
-// app/home.tsx
 import React from "react";
 import {
   View,
@@ -41,9 +40,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  /***************************************
-   * Screen & Header Layout
-   ***************************************/
   screen: {
     flex: 1,
     backgroundColor: "#edf5f0",
@@ -71,20 +67,12 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginHorizontal: 10,
   },
-
-  /***************************************
-   * Content Layout
-   ***************************************/
   contentContainer: {
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 30,
     alignItems: "center",
   },
-
-  /***************************************
-   * Primary Button
-   ***************************************/
   primaryButton: {
     backgroundColor: "#FFA000",
     borderRadius: 8,
@@ -99,20 +87,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
   },
-
-  /***************************************
-   * Info Container
-   ***************************************/
   infoContainer: {
     padding: 20,
     backgroundColor: "#FFF",
     borderRadius: 12,
-    // Shadow for iOS
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    // Shadow for Android
     elevation: 2,
     alignSelf: "stretch",
     alignItems: "center",

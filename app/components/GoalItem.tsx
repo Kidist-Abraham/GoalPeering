@@ -41,7 +41,9 @@ export function GoalItem({ item, token, reload }: GoalItemProps) {
     }
   };
 
-  // -- Joined Goal (Active) --
+  /**
+ * Active goal ( joined)
+ */
   if (item.joined) {
     return (
       <View style={styles.card}>
@@ -61,7 +63,9 @@ export function GoalItem({ item, token, reload }: GoalItemProps) {
     );
   }
 
-  // -- Pending Goal (not voted) --
+  /**
+  * Pending goal (Not joined)
+  */
   if (item.status === "PENDING" && !item.user_voted) {
     return (
       <View style={styles.card}>
@@ -97,7 +101,9 @@ export function GoalItem({ item, token, reload }: GoalItemProps) {
     );
   }
 
-  // -- Pending Goal (already voted) --
+  /**
+ * Pending goal (Voted)
+ */
   if (item.status === "PENDING" && item.user_voted) {
     return (
       <View style={styles.card}>
@@ -133,7 +139,9 @@ export function GoalItem({ item, token, reload }: GoalItemProps) {
     );
   }
 
-  // -- Active Goal (not joined) --
+/**
+ * Active goal (Not joined)
+ */
   if (item.status === "ACTIVE" && !item.joined) {
     return (
       <View style={styles.card}>
@@ -152,15 +160,10 @@ export function GoalItem({ item, token, reload }: GoalItemProps) {
       </View>
     );
   }
-
-  // Fallback (in case of unknown status)
   return null;
 }
 
 const styles = StyleSheet.create({
-  /*************************************
-   * Card Container
-   *************************************/
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -168,19 +171,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 10,
 
-    // Shadow for iOS
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
 
-    // Shadow for Android
     elevation: 2,
   },
-
-  /*************************************
-   * Text Elements
-   *************************************/
   cardTitle: {
     fontSize: 18,
     fontWeight: "700",
@@ -205,18 +202,10 @@ const styles = StyleSheet.create({
     marginTop: 6,
     textAlign: "right",
   },
-
-  /*************************************
-   * Progress Bar Container
-   *************************************/
   progressContainer: {
     marginTop: 6,
     marginBottom: 10,
   },
-
-  /*************************************
-   * Button Row
-   *************************************/
   buttonRow: {
     flexDirection: "row",
     justifyContent: "flex-start",

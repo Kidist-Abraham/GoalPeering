@@ -14,6 +14,9 @@ import axios from "axios";
 import Constants from "expo-constants";
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL;
+/**
+ * Render the registeration form
+ */
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
@@ -42,12 +45,9 @@ export default function RegisterScreen() {
       style={styles.screen}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      {/* Header Section */}
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Register</Text>
       </View>
-
-      {/* Content Section: Card for the form */}
       <View style={styles.contentContainer}>
         <View style={styles.formCard}>
           <Text style={styles.formTitle}>Create Your Account</Text>
@@ -94,12 +94,9 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  /**********************************************
-   * Screen & Header
-   **********************************************/
   screen: {
     flex: 1,
-    backgroundColor: "#edf5f0", // Let the RootLayout gradient show through
+    backgroundColor: "#edf5f0", 
   },
   headerContainer: {
     backgroundColor: "#95c427",
@@ -115,10 +112,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#fff",
   },
-
-  /**********************************************
-   * Content
-   **********************************************/
   contentContainer: {
     flex: 1,
     paddingHorizontal: 20,
@@ -129,14 +122,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
-
-    // iOS Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
 
-    // Android Shadow
+
     elevation: 3,
   },
   formTitle: {
@@ -147,9 +138,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  /**********************************************
-   * Input
-   **********************************************/
   input: {
     backgroundColor: "#f2f2f2",
     borderRadius: 6,
@@ -159,10 +147,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
   },
-
-  /**********************************************
-   * Button
-   **********************************************/
   registerButton: {
     backgroundColor: "#FFA000",
     borderRadius: 8,
@@ -176,9 +160,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  /**********************************************
-   * Login Link
-   **********************************************/
   loginLink: {
     marginTop: 16,
     alignItems: "center",

@@ -30,7 +30,6 @@ export default function GroupChatScreen() {
     console.log("Attempting socket connection with token:", token);
     setSocket(newSocket);
 
-    // Cleanup on unmount
     return () => {
       newSocket.disconnect();
     };
@@ -60,7 +59,6 @@ export default function GroupChatScreen() {
       setMessages((prev) => GiftedChat.append(prev, [serverMsgToGiftedMsg(msg)]));
     });
 
-    // Error handling
     socket.on('errorMessage', (error) => {
       console.warn('Socket error:', error);
     });
@@ -69,7 +67,6 @@ export default function GroupChatScreen() {
       console.log("Connection error:", err.message);
     });
 
-    // Cleanup listeners on unmount or when socket changes
     return () => {
       socket.off('connect');
       socket.off('initialMessages');
@@ -79,9 +76,6 @@ export default function GroupChatScreen() {
     };
   }, [socket, groupId]);
 
-  /**
-   * 3. Sending a message
-   */
   const onSend = useCallback((newMessages: IMessage[] = []) => {
     if (!socket || newMessages.length === 0) return;
 
@@ -93,9 +87,6 @@ export default function GroupChatScreen() {
     });
   }, [socket, groupId]);
 
-  /**
-   * 4. If desired, show a basic loading spinner until initial messages load
-   */
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -104,9 +95,6 @@ export default function GroupChatScreen() {
     );
   }
 
-  /**
-   * 5. Render GiftedChat
-   */
   return (
     <GiftedChat
       messages={messages}
@@ -120,9 +108,7 @@ export default function GroupChatScreen() {
 }
 
 /**
- * Utility function to convert a server-side message object
- * into GiftedChat's IMessage shape.
- * Example server fields: { id, group_id, user_id, message_text, created_at, user_name }
+ * Function to convert a server-side message object into GiftedChat's IMessage shape.
  */
 function serverMsgToGiftedMsg(serverMsg: any): IMessage {
   return {

@@ -15,6 +15,10 @@ import { fetchGoals, Goals, CreateGoals } from "./api/goalsApi";
 import { GoalItem } from "./components/GoalItem";
 import { useAuth } from "./contexts/AuthContext";
 
+/**
+ * Render the search 
+ */
+
 export default function SearchGoalsScreen() {
   const router = useRouter();
   const { token } = useAuth();
@@ -33,7 +37,6 @@ export default function SearchGoalsScreen() {
 
   const totalPages = Math.ceil(total / limit);
 
-  // Fetch paginated goals
   const loadGoals = async (
     pageNumber: number,
     newQuery: string,
@@ -57,23 +60,19 @@ export default function SearchGoalsScreen() {
     }
   };
 
-  // Reload the screen
   const reload = () => {
     router.push("/search");
   };
 
-  // On mount, load the first page of goals
   useEffect(() => {
     loadGoals(1, "", true);
   }, []);
 
-  // Searching with user-entered query
   const handleSearch = () => {
     setPage(1);
     loadGoals(1, query, true);
   };
 
-  // Creating a new goal
   const handleCreate = async () => {
     if (!token) return;
     try {
@@ -82,7 +81,6 @@ export default function SearchGoalsScreen() {
         "Success",
         "You created the goal. It will remain pending until it gets 2 votes."
       );
-      // Close the modal and refresh
       setModalVisible(false);
       reload();
     } catch (error) {
@@ -91,40 +89,34 @@ export default function SearchGoalsScreen() {
     }
   };
 
-  // Load more (pagination)
   const handleLoadMore = () => {
     if (!loading && page < totalPages) {
       loadGoals(page + 1, query, false);
     }
   };
 
-  // Pull-to-refresh
   const onRefresh = async () => {
     setRefreshing(true);
     setPage(1);
     await loadGoals(1, query, true);
   };
 
-  // Open modal to create a goal
   const handleOpenForm = () => {
     setNewGoalName("");
     setNewGoalDescription("");
     setModalVisible(true);
   };
 
-  // Close modal
   const handleCloseForm = () => {
     setModalVisible(false);
   };
 
-  // FlatList item renderer
   const renderGoal = ({ item }: { item: Goals }) => (
     <GoalItem item={item} token={token} reload={reload} />
   );
 
   return (
     <View style={styles.screen}>
-      {/* Header */}
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Search Goals</Text>
 
@@ -146,7 +138,6 @@ export default function SearchGoalsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Main Content (Goals List) */}
       <View style={styles.contentContainer}>
         <FlatList
           data={goals}
@@ -167,7 +158,6 @@ export default function SearchGoalsScreen() {
           }
         />
 
-        {/* Show spinner if loading the very first page */}
         {loading && page === 1 && (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator size="large" color="#95c427" />
@@ -175,7 +165,6 @@ export default function SearchGoalsScreen() {
         )}
       </View>
 
-      {/* Modal for Creating a Goal */}
       <Modal
         visible={modalVisible}
         transparent={true}
@@ -183,7 +172,6 @@ export default function SearchGoalsScreen() {
         onRequestClose={handleCloseForm}
       >
         <View style={styles.modalOverlay}>
-          {/* White Card for the Form */}
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Create Goal</Text>
 
@@ -228,9 +216,6 @@ export default function SearchGoalsScreen() {
 }
 
 const styles = StyleSheet.create({
-  /***************************************
-   * Screen & General Layout
-   ***************************************/
   screen: {
     flex: 1,
     backgroundColor: "#edf5f0",
@@ -246,9 +231,6 @@ const styles = StyleSheet.create({
     top: "50%",
   },
 
-  /***************************************
-   * Header Section
-   ***************************************/
   headerContainer: {
     backgroundColor: "#95c427",
     paddingHorizontal: 20,
@@ -300,12 +282,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  /***************************************
-   * Modal
-   ***************************************/
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)", // Slight dark overlay
+    backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -315,13 +294,11 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
 
-    // iOS Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
 
-    // Android Shadow
     elevation: 5,
   },
   modalTitle: {

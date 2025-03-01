@@ -3,6 +3,9 @@ import { useAuth } from "../contexts/AuthContext";
 import { useRouter, useSegments } from "expo-router";
 import { View, ActivityIndicator } from "react-native";
 
+/**
+ * Protect routes from access by unauthenticated users
+ */
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
@@ -13,7 +16,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     setIsMounted(true); 
   }, []);
 
-  // Ensure no navigation before mounting
   if (!isMounted) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

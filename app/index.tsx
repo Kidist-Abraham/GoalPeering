@@ -43,12 +43,10 @@ export default function LoginScreen() {
       style={styles.screen}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      {/* Header */}
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Login</Text>
       </View>
 
-      {/* Content (Login Form) */}
       <View style={styles.contentContainer}>
         <View style={styles.formCard}>
           <Text style={styles.formTitle}>Welcome Back!</Text>
@@ -70,12 +68,11 @@ export default function LoginScreen() {
             onChangeText={setPassword}
           />
 
-          {/* Login Button */}
+    
           <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
             <Text style={styles.loginButtonText}>Log In</Text>
           </TouchableOpacity>
 
-          {/* Register Button */}
           <TouchableOpacity
             style={styles.registerButton}
             onPress={() => router.push("/register")}
@@ -89,9 +86,6 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  /****************************************
-   * Screen & Header
-   ****************************************/
   screen: {
     flex: 1,
     backgroundColor: "#edf5f0",
@@ -110,10 +104,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#fff",
   },
-
-  /****************************************
-   * Content & Form
-   ****************************************/
   contentContainer: {
     flex: 1,
     paddingHorizontal: 20,
@@ -124,12 +114,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
-    // iOS Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
-    // Android Shadow
     elevation: 3,
   },
   formTitle: {
@@ -149,9 +137,6 @@ const styles = StyleSheet.create({
     color: "#333",
   },
 
-  /****************************************
-   * Buttons
-   ****************************************/
   loginButton: {
     backgroundColor: "#FFA000",
     borderRadius: 8,

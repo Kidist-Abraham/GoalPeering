@@ -1,5 +1,3 @@
-// OwnedGoalsScreen.tsx
-
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -15,7 +13,12 @@ import { useRouter } from "expo-router";
 import { Goals, fetchOwnedGoals, LeaveGoals, CompleteGoals } from "./api/goalsApi";
 import Constants from "expo-constants";
 
+
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL;
+
+/**
+ * Render the goals ocreated by the user
+ */
 
 export default function OwnedGoalsScreen() {
   const { token } = useAuth();
@@ -90,7 +93,6 @@ export default function OwnedGoalsScreen() {
                 {
                   text: "No",
                   onPress: () => {
-                    // do nothing
                   },
                 },
               ],
@@ -134,12 +136,9 @@ export default function OwnedGoalsScreen() {
 
   return (
     <View style={styles.screen}>
-      {/* Header */}
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Your Owned Goals</Text>
       </View>
-
-      {/* Content */}
       <View style={styles.contentContainer}>
         {loading && (
           <ActivityIndicator
@@ -164,9 +163,6 @@ export default function OwnedGoalsScreen() {
 }
 
 const styles = StyleSheet.create({
-  /*************************************
-   * Screen & Header
-   *************************************/
   screen: {
     flex: 1,
     backgroundColor: "#edf5f0",
@@ -185,9 +181,6 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 
-  /*************************************
-   * Content
-   *************************************/
   contentContainer: {
     flex: 1,
     paddingHorizontal: 20,
@@ -199,23 +192,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 20,
   },
-
-  /*************************************
-   * Card
-   *************************************/
   card: {
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
-
-    // iOS Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
-
-    // Android Shadow
     elevation: 2,
   },
   goalName: {
@@ -229,10 +214,6 @@ const styles = StyleSheet.create({
     color: "#555",
     marginBottom: 10,
   },
-
-  /*************************************
-   * Button Row & Buttons
-   *************************************/
   buttonRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
