@@ -4,6 +4,8 @@ import { io, Socket } from 'socket.io-client';
 import { useLocalSearchParams } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import Constants from "expo-constants";
+import { View, ActivityIndicator } from 'react-native';
+
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL;
 
 export default function GroupChatScreen() {
@@ -13,105 +15,116 @@ export default function GroupChatScreen() {
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // 1) Establish the socket connection
+  /**
+   * 1. Establish the socket connection when token or groupId changes
+   */
   useEffect(() => {
-    console.log("TOKENNNNNNNNNNNNN", token)
+    console.log("TOKEN:", token);
     const newSocket = io(API_BASE_URL, {
       transports: ["websocket"],
       query: { token },
     });
-  
+
     console.log("Attempting socket connection with token:", token);
-  
     setSocket(newSocket);
-  
+
+    // Cleanup on unmount
     return () => {
       newSocket.disconnect();
     };
   }, [groupId, token]);
 
-  // 2) On socket connect, join the group and set up event listeners
+  /**
+   * 2. Once socket is set, attach listeners
+   */
   useEffect(() => {
-    console.log("Socket: ", socket)
     if (!socket) return;
 
-    // When the socket is fully connected:
+    // On connect, join the group
     socket.on('connect', () => {
       console.log('Connected to socket server, socket ID:', socket.id);
-
-      // Emit joinGroup with the groupId so the server knows which room to join
       socket.emit('joinGroup', { groupId });
-
-      // Optionally, you can request initial chat messages after joining
-      // but often the server just sends them automatically in response to joinGroup
     });
 
-    // Receive the initial messages from the server (if your server sends them after joinGroup)
+    // Receive initial messages
     socket.on('initialMessages', (msgs) => {
       const giftedMessages = msgs.map(serverMsgToGiftedMsg);
       setMessages(giftedMessages);
+      setLoading(false);
     });
 
-    // Listen for any new messages
+    // Listen for new messages from the server
     socket.on('newMessage', (msg) => {
       setMessages((prev) => GiftedChat.append(prev, [serverMsgToGiftedMsg(msg)]));
     });
 
-    // Handle any error messages from the server
+    // Error handling
     socket.on('errorMessage', (error) => {
       console.warn('Socket error:', error);
     });
 
     socket.on("connect_error", (err) => {
-        console.log("Connection error:", err.message);
-      });
-      
+      console.log("Connection error:", err.message);
+    });
 
-    // Cleanup listeners on unmount or socket change
+    // Cleanup listeners on unmount or when socket changes
     return () => {
       socket.off('connect');
       socket.off('initialMessages');
       socket.off('newMessage');
       socket.off('errorMessage');
+      socket.off('connect_error');
     };
   }, [socket, groupId]);
 
-  // 3) Sending a message
-  const onSend = useCallback(
-    (newMessages: IMessage[] = []) => {
-        console.log(newMessages)
-      if (!socket || newMessages.length === 0) return;
+  /**
+   * 3. Sending a message
+   */
+  const onSend = useCallback((newMessages: IMessage[] = []) => {
+    if (!socket || newMessages.length === 0) return;
 
-      const msg = newMessages[0];
-      
-      // Emit the message to the server
-      socket.emit('sendMessage', {
-        groupId,
-        text: msg.text,
-      });
-      
+    // We do not immediately append, relying on server's 'newMessage' event
+    const [msg] = newMessages;
+    socket.emit('sendMessage', {
+      groupId,
+      text: msg.text,
+    });
+  }, [socket, groupId]);
 
-      // We do *not* immediately append the message, because we'll rely on the
-      // server’s 'newMessage' broadcast (and DB insertion time, etc.) to confirm.
-    },
-    [socket, groupId]
-  );
+  /**
+   * 4. If desired, show a basic loading spinner until initial messages load
+   */
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
+  /**
+   * 5. Render GiftedChat
+   */
   return (
     <GiftedChat
       messages={messages}
       onSend={onSend}
-      user={{ _id: token || 'guest', name: 'Demo User' }}
+      user={{
+        _id: token || 'guest',
+        name: 'Demo User',
+      }}
     />
   );
 }
 
-// Utility function to convert a server-side message object
-// into GiftedChat's IMessage shape.
+/**
+ * Utility function to convert a server-side message object
+ * into GiftedChat's IMessage shape.
+ * Example server fields: { id, group_id, user_id, message_text, created_at, user_name }
+ */
 function serverMsgToGiftedMsg(serverMsg: any): IMessage {
-  // Adjust field names according to how your server sends data.
-  // Example server fields: { id, group_id, user_id, message_text, created_at, user_name }
   return {
     _id: serverMsg.id ?? Math.random().toString(36),
     text: serverMsg.message_text || serverMsg.text || '',
